@@ -15,4 +15,11 @@ dependencyResolutionManagement {
 
 rootProject.name = "CaloriesApp"
 include(":app")
- 
+include(":core")
+include(":onboarding")
+include(":onboarding:presentation")
+include(":onboarding:domain")
+include(":tracker")
+include(":tracker:data")
+include(":tracker:domain")
+include(":tracker:presentation")
