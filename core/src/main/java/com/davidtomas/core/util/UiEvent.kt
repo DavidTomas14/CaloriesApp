@@ -1,6 +1,7 @@
 package com.davidtomas.core.util
 
 sealed class UiEvent {
-    data class Navigate(val route: String): UiEvent()
+    object Success: UiEvent()
     object NavigateUP: UiEvent()
+    data class ShowSnackBar(val message: UiText) : UiEvent()
 }
