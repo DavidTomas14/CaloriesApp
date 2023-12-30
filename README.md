@@ -4,7 +4,7 @@ Welcome to CaloriesTrackerApp, your comprehensive tool for personalized nutritio
 ## Features
 
 1️⃣ Intuitive Calorie Tracking:
-Easily log your daily meals, including breakfast, lunch, dinner, and snacks, with a user-friendly interface. Keep a real-time record of your calorie consumption throughout the day.
+Easily log your daily meals, <span style="color:orange">including breakfast</span>  including breakfast, lunch, dinner, and snacks, with a user-friendly interface. Keep a real-time record of your calorie consumption throughout the day.
 
 2️⃣ Nutrient Information from API:
 CaloriesTrackerApp integrates with a powerful API that provides accurate and up-to-date nutritional information for each meal. Receive detailed insights into the amount of fat, protein, and carbohydrates in 100 grams of your chosen foods.
@@ -100,7 +100,8 @@ This module includes:
     - ViewModel: the shield of the screen, nothing new. Without viewModel screen is nothing
     - State: Data Class with all the fields that are used in the different components to be created.
     - Screen: the class that defines the screen, is based on the different components created on the components package
-<br>![image](https://github.com/DavidTomas14/CaloriesApp/assets/67898763/bb003d5b-1fdd-4917-94d2-34121f0fe550)<br>
+    - ModelUi: Data classes that are created only control the state of components. In the case of the MealUi of this app, it includes all the info around a meal and a it also has a dedicated field specially to control if the component that uses this object is Expanded or not. <br>
+![image](https://github.com/DavidTomas14/CaloriesApp/assets/67898763/397b7a51-af28-4220-9470-626bf5e91a16)
 
 ### 3️⃣   Core and CoreUi Modules
 This two modules cover many aspects that will be used in different modules of the app.
@@ -122,7 +123,218 @@ This module has dependencies from the rest of the modules. Is the central module
 - Di: Dependency injection of the dependencies needed in the module
 - Route: Object with the routes of the different screens of the app
 - App: Needed to initiate DaggerHilt (dont forget to add it in Manifest)
-- MainActivity: entry point of the app, where navigations are controlled.
+- MainActivity: entry point of the app, where navigations are controlled. <br>
 ![image](https://github.com/DavidTomas14/CaloriesApp/assets/67898763/24b7f7cd-ca62-4cee-9c2e-c1990f4394a9)
 
 ## 🖌️ Presentation UI detail explanation - Components - ViewModel - Screen - Compose
+In order to explain how this different classes from the UI interact, it is necessary to start explaining the principal one that manages all the events and hosts the state of the screen. However before starting with the viewModel is necessary to explain to classes needed by the viewModel to do the magic.
+STATE CLASS AND UIMODELS
+The state class represent the state of the screen and will be used by the components to recompose. The UiModels represent models used to represent part of the state grouped in a better organised way. In this case the MealUi is passed to a component to create the meal and control its state of expanded or collapsed
+```
+data class TrackerOverviewState(
+    val totalCarbs: Int = 0,
+    val totalProtein: Int = 0,
+    ....
+    val trackedFoods: List<TrackedFood> = emptyList(),
+    val mealUis: List<MealUi> = defaultsMealUis
+)
+data class MealUi(
+    val name: UiText,
+    @DrawableRes val drawableRes: Int,
+    val mealType: MealType,
+    ...
+    val calories: Int = 0,
+    val isExpanded: Boolean = false
+)
+```
+### 1️⃣ **VIEWMODEL**
+#### State
+The state is wrapped in a mutableState that will be used by the screen to configure the components. Any change of this state will trgger recomposition and will change the components.
+```
+var state by mutableStateOf(TrackerOverviewState())
+        private set
+```
+#### UiEvents
+As we mentioned in a previous section there are common events that need to be handled by the UI and triggered in composables, such as showing a SnackBar. 
+To make this possible a Channel were this UiEvent are emitted is created. This will be observed in the screen and triggered when any event is emitted. The emissions are made in the viewModel in the onEvent function (explained in next section) 
+```
+private val _uiEvent = Channel<UiEvent>()
+val uiEvent = _uiEvent.receiveAsFlow()
+```
+#### OnEvent Function
+Is the handler of the events of the screen. The components will execute this function when any event is triggered. When this function is called it receives one of the Events from our sealed class to contro events, and depending on which one is passed it will do one thing or another.
+In most of the cases the state will be modified and this will trigger recomposition of the components that observe the state. 
+```
+ fun onEvent(event: TrackerOverviewEvent) {
+        when (event) {
+            is TrackerOverviewEvent.OnDeleteTrackedFoodClick -> {
+                _uiEvent.send(
+                        UiEvent.ShowSnackBar(
+                            UiText.StringResource(R.string.error_something_went_wrong)
+                        )
+                    )
+            }
+             is TrackerOverviewEvent.OnNextDayClick -> {
+                state = state.copy(
+                    date = state.date.plusDays(1),
+                )
+                refreshFoods()
+            }
+            is ...
+```
+
+### 2️⃣ **SCREEN**
+The screen consists of the different components of the UI. The screen uses the state that is in the viewModel to pass the different elements of it to create the components. As we mentioned previously all of the changes made on the stae will trigger the recomposition of such components.
+In the next example the DaySelector component makes use of the date field from the state and also receives listeners with the onEvent function of the viewModel passing the corresponding Event thay is triggered.
+```
+          DaySelector(
+                date = state.date,
+                onPreviousDayClicked = {
+                    viewModel.onEvent(TrackerOverviewEvent.OnPreviousDayClick)
+                },
+                onNextDayClicked = {
+                    viewModel.onEvent(TrackerOverviewEvent.OnNextDayClick)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = spacing.spaceMedium)
+            )
+```
+As we mentioned in a previous section, there are also UiEvents that need to be executed in composables. This is done by observing the emissions in the channel previously created in the viewModel.
+```
+LaunchedEffect(key1 = keyboardController) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is UiEvent.ShowSnackBar -> {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = event.message.asString(context)
+                    )
+                    keyboardController?.hide()
+                }
+
+                is UiEvent.NavigateUP -> onNavigateUp()
+                else -> Unit
+            }
+        }
+    }
+```
+## Extras
+### **Navigation in MainActivity**
+Is controlled in the MainActivity from the App Module. Compose navigation is used in this case and the different composables are setted to their corresponding routes. In order to avoid coupling and making modules completely independent from each other, the navigation is passed to the different screen as a parameter. In addition if any screen needs the scaffoldstate to for example show a Snackbar it is also passed as a parameter. 
+```
+CaloryTrackerTheme {
+                val navController = rememberNavController()
+                val scaffoldState = rememberScaffoldState()
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    scaffoldState = scaffoldState
+                ) {
+                    NavHost(
+                        navController = navController,
+                        startDestination = if (shouldShowOnboarding) Route.WELCOME else Route.TRACKER_OVERVIEW
+                    ) {
+                        composable(Route.WELCOME) {
+                            WelcomeScreen(onNextButtonClick = { navController.navigate(Route.GENDER) })
+                        }
+                        composable(Route.GENDER) {
+                            GenderScreen(onNextButtonClick = { navController.navigate(Route.AGE) })
+                        }
+                        composable ...
+```
+### **Passing Params in Navigation**
+```
+composable(Route.TRACKER_OVERVIEW) {
+                            TrackerOverviewScreen(
+                                onNavigateToSearch = { mealName, day, month, year ->
+                                    navController.navigate(
+                                        Route.SEARCH +
+                                                "/$mealName" +
+                                                "/$day" +
+                                                "/$month" +
+                                                "/$year"
+                                    )
+                                }
+                            )
+                        }
+                        composable(
+                            route = Route.SEARCH + "/{mealName}/{dayOfMonth}/{month}/{year}",
+                            arguments = listOf(
+                                navArgument("mealName") {
+                                    type = NavType.StringType
+                                },
+                                navArgument("dayOfMonth") {
+                                    type = NavType.IntType
+                                },
+                                navArgument("month") {
+                                    type = NavType.IntType
+                                },
+                                navArgument("year") {
+                                    type = NavType.IntType
+                                }
+                            )
+                        ) {
+                            val mealName = it.arguments?.getString("mealName")!!
+                            val dayOfMonth = it.arguments?.getInt("dayOfMonth")!!
+                            val month = it.arguments?.getInt("month")!!
+                            val year = it.arguments?.getInt("year")!!
+                            SearchScreen(
+                                scaffoldState = scaffoldState,
+                                mealName = mealName,
+                                dayOfMonth = dayOfMonth,
+                                month = month,
+                                year = year,
+                                onNavigateUp = {
+                                    navController.navigateUp()
+                                }
+                            )
+                        }
+```
+
+### **LocalSpacing**
+A very useful way of providing the different dimensions used in the app is by using a LocalComposition. This is easily done by using compositionLocalOf
+```
+data class Dimensions(
+    val default: Dp = 0.dp,
+    val spaceExtraSmall: Dp = 4.dp,
+    val spaceSmall: Dp = 8.dp,
+    val spaceMedium: Dp = 16.dp,
+    val spaceLarge: Dp = 32.dp,
+    val spaceExtraLarge: Dp = 64.dp,
+)
+
+val LocalSpacing = compositionLocalOf {
+    Dimensions()
+}
+```
+This LocalComposition has to be provided in de CompositionLocalProvider inside the Theme.
+```
+@Composable
+fun CaloryTrackerTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable() () -> Unit) {
+    val colors = if (darkTheme) {
+        DarkColorPalette
+    } else {
+        LightColorPalette
+    }
+    CompositionLocalProvider (LocalSpacing provides Dimensions()) {
+        MaterialTheme(
+            colors = colors,
+            typography = Typography,
+            shapes = Shapes,
+            content = content
+        )
+    }
+}
+```
+This will enable to use the LocalSpacing in any of our composables of our app.
+This is the same ase the context thay is also a LocalComposable. 
+```
+@Composable
+fun TrackerOverviewScreen(
+    onNavigateToSearch: (String, Int, Int, Int) -> Unit,
+    viewModel: TrackerOverviewViewModel = hiltViewModel()
+) {
+    val spacing = LocalSpacing.current
+    val context = LocalContext.current
+
+  ....
+```
