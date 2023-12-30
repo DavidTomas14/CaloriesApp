@@ -1,7 +1,7 @@
 # 🍎 CaloriesTrackerApp 
 Welcome to CaloriesTrackerApp, your comprehensive tool for personalized nutrition management and healthy lifestyle choices! This app is designed to empower you to take control of your daily caloric intake, with a special focus on the nutritional content of each meal.
 
-## Features
+## 🥇 Features
 
 1️⃣ Intuitive Calorie Tracking:
 Easily log your daily meals, <span style="color:orange">including breakfast</span>  including breakfast, lunch, dinner, and snacks, with a user-friendly interface. Keep a real-time record of your calorie consumption throughout the day.
@@ -148,20 +148,20 @@ data class MealUi(
 )
 ```
 ### 1️⃣ **VIEWMODEL**
-#### State
+#### 🟥 State
 The state is wrapped in a mutableState that will be used by the screen to configure the components. Any change of this state will trgger recomposition and will change the components.
 ```
 var state by mutableStateOf(TrackerOverviewState())
         private set
 ```
-#### UiEvents
+#### 🟢 UiEvents
 As we mentioned in a previous section there are common events that need to be handled by the UI and triggered in composables, such as showing a SnackBar. 
 To make this possible a Channel were this UiEvent are emitted is created. This will be observed in the screen and triggered when any event is emitted. The emissions are made in the viewModel in the onEvent function (explained in next section) 
 ```
 private val _uiEvent = Channel<UiEvent>()
 val uiEvent = _uiEvent.receiveAsFlow()
 ```
-#### OnEvent Function
+#### 🔷 OnEvent Function
 Is the handler of the events of the screen. The components will execute this function when any event is triggered. When this function is called it receives one of the Events from our sealed class to contro events, and depending on which one is passed it will do one thing or another.
 In most of the cases the state will be modified and this will trigger recomposition of the components that observe the state. 
 ```
@@ -218,8 +218,8 @@ LaunchedEffect(key1 = keyboardController) {
         }
     }
 ```
-## Extras
-### **Navigation in MainActivity**
+## ➕ Extras
+### 🟥 **Navigation in MainActivity**
 Is controlled in the MainActivity from the App Module. Compose navigation is used in this case and the different composables are setted to their corresponding routes. In order to avoid coupling and making modules completely independent from each other, the navigation is passed to the different screen as a parameter. In addition if any screen needs the scaffoldstate to for example show a Snackbar it is also passed as a parameter. 
 ```
 CaloryTrackerTheme {
@@ -241,7 +241,7 @@ CaloryTrackerTheme {
                         }
                         composable ...
 ```
-### **Passing Params in Navigation**
+### 🟢**Passing Params in Navigation**
 ```
 composable(Route.TRACKER_OVERVIEW) {
                             TrackerOverviewScreen(
@@ -290,7 +290,7 @@ composable(Route.TRACKER_OVERVIEW) {
                         }
 ```
 
-### **LocalSpacing**
+### 🔷**LocalSpacing**
 A very useful way of providing the different dimensions used in the app is by using a LocalComposition. This is easily done by using compositionLocalOf
 ```
 data class Dimensions(
