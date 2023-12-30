@@ -3,7 +3,7 @@ package com.davidtomas.caloriesapp.di
 import android.app.Application
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
-import com.davidtomas.core.domain.data.preferences.DefaultPreferences
+import com.davidtomas.core.data.preferences.DefaultPreferences
 import com.davidtomas.core.domain.preferences.Preferences
 import com.davidtomas.core.domain.use_case.FilterOutDigitsUseCase
 import dagger.Module

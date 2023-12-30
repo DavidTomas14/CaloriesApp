@@ -15,13 +15,14 @@
             <option value="$PROJECT_DIR$/buildSrc" />
             <option value="$PROJECT_DIR$/core" />
             <option value="$PROJECT_DIR$/core-ui" />
-            <option value="$PROJECT_DIR$/onboarding" />
-            <option value="$PROJECT_DIR$/onboarding/domain" />
-            <option value="$PROJECT_DIR$/onboarding/presentation" />
-            <option value="$PROJECT_DIR$/tracker" />
-            <option value="$PROJECT_DIR$/tracker/data" />
-            <option value="$PROJECT_DIR$/tracker/domain" />
-            <option value="$PROJECT_DIR$/tracker/presentation" />
+            <option value="$PROJECT_DIR$/features" />
+            <option value="$PROJECT_DIR$/features/onboarding" />
+            <option value="$PROJECT_DIR$/features/onboarding/domain" />
+            <option value="$PROJECT_DIR$/features/onboarding/presentation" />
+            <option value="$PROJECT_DIR$/features/tracker" />
+            <option value="$PROJECT_DIR$/features/tracker/data" />
+            <option value="$PROJECT_DIR$/features/tracker/domain" />
+            <option value="$PROJECT_DIR$/features/tracker/presentation" />
           </set>
         </option>
       </GradleProjectSettings>
