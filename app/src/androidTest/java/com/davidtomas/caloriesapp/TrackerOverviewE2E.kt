@@ -17,7 +17,7 @@ import androidx.navigation.navArgument
 import coil.annotation.ExperimentalCoilApi
 import com.davidtomas.caloriesapp.navigation.Route
 import com.davidtomas.caloriesapp.repository.TrackerRepositoryFake
-import com.davidtomas.caloriesapp.ui.theme.CaloryTrackerTheme
+import com.davidtomas.core_ui.CaloryTrackerTheme
 import com.davidtomas.core.domain.model.ActivityLevel
 import com.davidtomas.core.domain.model.Gender
 import com.davidtomas.core.domain.model.GoalType
