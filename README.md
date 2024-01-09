@@ -112,6 +112,7 @@ This two modules cover many aspects that will be used in different modules of th
   - Util Package: In this app there have been used to ver handy classes
     - UiEvent: Sealed class with common events that need to be observed by composables in order to trigger events from the proper composable. A very obvious example are the SnackBars that need context info an need to be triggered inside the composable. These UiEvents are used in the different screens of the app
     - UiText: Utility class that easily handles if a string is static and is taken from the strings.xml, or is dynamic and comes from any source of data.
+  - Strings.xml: in the res package all the strings covered in the app are saved in the strings xml file
 <br>
 
 ![image](https://github.com/DavidTomas14/CaloriesApp/assets/67898763/31e13045-247e-432e-8889-cd1654470933)
